@@ -1,13 +1,24 @@
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
-
 from scipy.stats import norm
 from statsmodels.stats.proportion import proportion_confint
+from torch.utils.data import DataLoader
 
-def free_adv_train(model, data_tr, criterion, optimizer, lr_scheduler, \
-                   eps, device, m=4, epochs=100, batch_size=128, dl_nw=10):
+
+def free_adv_train(
+    model,
+    data_tr,
+    criterion,
+    optimizer,
+    lr_scheduler,
+    eps,
+    device,
+    m=4,
+    epochs=100,
+    batch_size=128,
+    dl_nw=10,
+):
     """
     Free adversarial training, per Shafahi et al.'s work.
     Arguments:
@@ -19,7 +30,7 @@ def free_adv_train(model, data_tr, criterion, optimizer, lr_scheduler, \
     - eps: l_inf epsilon to defend against
     - device: device used for training
     - m: # times a batch is repeated
-    - epochs: "virtual" number of epochs (equivalent to the number of 
+    - epochs: "virtual" number of epochs (equivalent to the number of
         epochs of standard training)
     - batch_size: training batch_size
     - dl_nw: number of workers in data loader
@@ -27,30 +38,24 @@ def free_adv_train(model, data_tr, criterion, optimizer, lr_scheduler, \
     - trained model
     """
     # init data loader
-    loader_tr = DataLoader(data_tr,
-                           batch_size=batch_size,
-                           shuffle=True,
-                           pin_memory=True,
-                           num_workers=dl_nw)
-                           
+    loader_tr = DataLoader(
+        data_tr, batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=dl_nw
+    )
 
     # init delta (adv. perturbation) - FILL ME
-    
 
     # total number of updates - FILL ME
-    
 
     # when to update lr
-    scheduler_step_iters = int(np.ceil(len(data_tr)/batch_size))
+    scheduler_step_iters = int(np.ceil(len(data_tr) / batch_size))
 
     # train - FILLE ME
-    
-    
+
     # done
     return model
 
 
-class SmoothedModel():
+class SmoothedModel:
     """
     Use randomized smoothing to find L2 radius around sample x,
     s.t. the classification of x doesn't change within the L2 ball
@@ -65,14 +70,14 @@ class SmoothedModel():
 
     def _sample_under_noise(self, x, n, batch_size):
         """
-        Classify input x under noise n times (with batch size 
+        Classify input x under noise n times (with batch size
         equal to batch_size) and return class counts (i.e., an
         array counting how many times each class was assigned the
         max confidence).
         """
         # FILL ME
         pass
-        
+
     def certify(self, x, n0, n, alpha, batch_size):
         """
         Arguments:
@@ -88,24 +93,23 @@ class SmoothedModel():
         - prediction / top class (ABSTAIN in case of abstaining)
         - certified radius (0. in case of abstaining)
         """
-        
+
         # find prediction (top class c) - FILL ME
-        
-        
+
         # compute lower bound on p_c - FILL ME
-        
 
         # done
         return c, radius
-        
+
 
 class NeuralCleanse:
     """
     A method for detecting and reverse-engineering backdoors.
     """
 
-    def __init__(self, model, dim=(1, 3, 32, 32), lambda_c=0.0005,
-                 step_size=0.005, niters=2000):
+    def __init__(
+        self, model, dim=(1, 3, 32, 32), lambda_c=0.0005, step_size=0.005, niters=2000
+    ):
         """
         Arguments:
         - model: model to test
@@ -130,14 +134,12 @@ class NeuralCleanse:
         - data_loader: DataLoader for test data
         - device: device to run computation
         Outputs:
-        - mask: 
-        - trigger: 
+        - mask:
+        - trigger:
         """
         # randomly initialize mask and trigger in [0,1] - FILL ME
-        
 
         # run self.niters of SGD to find (potential) trigger and mask - FILL ME
-        
 
         # done
         return mask, trigger
