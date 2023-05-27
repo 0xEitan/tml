@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -115,8 +117,31 @@ class SmoothedModel:
         array counting how many times each class was assigned the
         max confidence).
         """
-        # FILL ME
-        pass
+
+        with torch.no_grad():
+            # class -> count, with a default of 0
+            counts = defaultdict(lambda: 0)
+
+            # generate `n` samples, in `batch_size` increments
+            for _start in range(0, n, batch_size):
+                # calculate size of current batch
+                _end = min(_start + batch_size, n)
+                size = _end - _start
+
+                # create a batch of size `size` from single sample `x`
+                batch = x.repeat(size, 1, 1, 1)
+
+                # generate noise for each image in the batch
+                noise = torch.normal(0, self.sigma, size=batch.size()).to(batch.device)
+
+                # predict
+                pred = self.model(batch + noise).argmax(1)
+
+                # count
+                for c in pred:
+                    counts[c] += 1
+
+        return counts
 
     def certify(self, x, n0, n, alpha, batch_size):
         """
@@ -134,9 +159,20 @@ class SmoothedModel:
         - certified radius (0. in case of abstaining)
         """
 
-        # find prediction (top class c) - FILL ME
+        # find prediction (top class c)
+        counts0 = self._sample_under_noise(x, n0, batch_size)
+        c_a = np.argmax(counts0.values())
 
-        # compute lower bound on p_c - FILL ME
+        counts = self._sample_under_noise(x, n, batch_size)
+        p_c = counts[c_a]
+
+        # compute lower bound on p_c
+        p_a = proportion_confint(p_c, n, alpha=2 * alpha, method="beta")[0]
+
+        if p_a < 0.5:
+            c, radius = self.ABSTAIN, 0.0
+        else:
+            c, radius = c_a, self.sigma * norm.ppf(p_a)
 
         # done
         return c, radius

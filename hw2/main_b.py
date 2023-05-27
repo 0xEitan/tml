@@ -10,6 +10,11 @@ import defenses
 import models
 import utils
 
+try:
+    from tqdm import tqdm
+except ImportError:
+    tqdm = lambda x: x
+
 sns.set_theme()
 
 import torch
@@ -41,7 +46,7 @@ def run_evaluation(sigma):
 
     # find certified radius per sample
     cert_radii = []
-    for x, y in loader_test:
+    for x, y in tqdm(loader_test):
         x, y = x.to(device), y.to(device)
         pred, radius = smoothed_model.certify(
             x, consts.RS_N0, consts.RS_N, consts.RS_ALPHA, consts.BATCH_SIZE
@@ -55,7 +60,15 @@ def run_evaluation(sigma):
 def plot_radii(radii):
     x = []  # radius
     y = []  # accuracy
-    # derive x and y from the certified radii - FILL ME
+
+    # derive x and y from the certified radii
+    for radius in radii:
+        if radius == 0:
+            continue
+
+        x.append(radius)
+        count = len(list(r for r in radii if r >= radius))
+        y.append(count / len(radii))
 
     # plot
     plt.plot(x, y)
