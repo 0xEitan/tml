@@ -51,7 +51,8 @@ def free_adv_train(
     delta = torch.zeros(data_tr[0][0].size()).to(device)
 
     # total number of updates
-    total = 0
+    # should be the same as in `standard_train()`
+    total = epochs * len(data_tr) / batch_size
 
     # when to update lr
     scheduler_step_iters = int(np.ceil(len(data_tr) / batch_size))
@@ -59,6 +60,7 @@ def free_adv_train(
     # train
     for epoch in tqdm(range(int(np.ceil(epochs / m)))):
         for batch_i, minibatch in enumerate(loader_tr, 0):
+            # get inputs and labels
             inputs, labels = minibatch[0].to(device), minibatch[1].to(device)
 
             for m_i in range(m):
