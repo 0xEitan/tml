@@ -56,6 +56,7 @@ def free_adv_train(
 
     # when to update lr
     scheduler_step_iters = int(np.ceil(len(data_tr) / batch_size))
+    optimizer_steps = 0
 
     # train
     for epoch in tqdm(range(int(np.ceil(epochs / m)))):
@@ -85,9 +86,10 @@ def free_adv_train(
                 # optimize
                 optimizer.step()
 
-        # update scheduler
-        if epoch > 0 and epoch % scheduler_step_iters == 0:
-            lr_scheduler.step()
+                # update scheduler
+                optimizer_steps += 1
+                if optimizer_steps % scheduler_step_iters == 0:
+                    lr_scheduler.step()
 
     # done
     return model
