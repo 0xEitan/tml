@@ -62,7 +62,7 @@ def plot_radii(radii):
     y = []  # accuracy
 
     # derive x and y from the certified radii
-    for radius in radii:
+    for radius in sorted(set(radii)):
         if radius == 0:
             continue
 
