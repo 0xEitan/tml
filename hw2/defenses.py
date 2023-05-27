@@ -258,4 +258,4 @@ class NeuralCleanse:
                 trigger.grad.zero_()
 
         # done
-        return mask, trigger
+        return mask.repeat(1, 3, 1, 1), trigger
