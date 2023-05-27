@@ -222,7 +222,7 @@ class NeuralCleanse:
         # mask_dim[1] = 1
         # mask_dim = tuple(mask_dim)
         # mask = torch.rand(mask_dim, requires_grad=True).to(device)
-        mask = torch.rand(self.dim, requires_grad=True).to(device)
+        mask = torch.rand(self.dim[2:], requires_grad=True).to(device)
         trigger = torch.rand(self.dim, requires_grad=True).to(device)
 
         data_iter = cycle(data_loader)
@@ -241,11 +241,21 @@ class NeuralCleanse:
 
             # calc loss against the target labels
             loss = self.loss_func(outputs, target_labels)
-            loss += (self.lambda_c * mask.sum()).to(device)
+            loss += (self.lambda_c * mask.abs().sum()).to(device)
             loss.backward()
 
-            mask -= mask.grad.sign() * self.step_size
-            trigger -= trigger.grad.sign() * self.step_size
+            with torch.no_grad():
+                # optimize
+                mask -= mask.grad.sign() * self.step_size
+                trigger -= trigger.grad.sign() * self.step_size
+
+                # pixel values, between 0 and 1
+                torch.clamp_(mask, 0, 1)
+                torch.clamp_(trigger, 0, 1)
+
+                # zero the parameter gradients
+                mask.grad.zero_()
+                trigger.grad.zero_()
 
         # done
         return mask, trigger
