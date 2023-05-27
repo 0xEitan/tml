@@ -139,7 +139,7 @@ class SmoothedModel:
 
                 # count
                 for c in pred:
-                    counts[c] += 1
+                    counts[c.item()] += 1
 
         return counts
 
@@ -161,7 +161,7 @@ class SmoothedModel:
 
         # find prediction (top class c)
         counts0 = self._sample_under_noise(x, n0, batch_size)
-        c_a = np.argmax(counts0.values())
+        c_a = list(counts0.keys())[np.argmax(counts0.values())]
 
         counts = self._sample_under_noise(x, n, batch_size)
         p_c = counts[c_a]
