@@ -225,17 +225,8 @@ class NeuralCleanse:
         mask = torch.rand(self.dim, requires_grad=True).to(device)
         trigger = torch.rand(self.dim, requires_grad=True).to(device)
 
-        # SGD to find (potential) trigger and mask
-        # optimizer = torch.optim.SGD(
-        #     params=[mask, trigger],
-        #     lr=self.step_size,
-        # )
-
         data_iter = cycle(data_loader)
         for _ in tqdm(range(self.niters)):
-            # data_iter = iter(data_loader)
-            # sgd_iters = 0
-            # while True:
             inputs, _ = next(data_iter)
             inputs = inputs.to(device)
             target_labels = (
@@ -245,9 +236,6 @@ class NeuralCleanse:
             # build the triggered image according to the paper, A(x,m,t) = (1-m)*x + m*t
             inputs = (1 - mask) * inputs + mask * trigger
 
-            # zero the parameter gradients
-            # optimizer.zero_grad()
-
             # forward
             outputs = self.model(inputs)
 
@@ -255,10 +243,11 @@ class NeuralCleanse:
             loss = self.loss_func(outputs, target_labels)
             # since we want to minimize the mask, we incorporate its norm to the loss
             loss += (self.lambda_c * mask.sum()).to(device)
+            loss.backward()
 
-            grad = torch.autograd.grad(loss.sum(), inputs)[0]
-            mask = mask + self.step_size * grad
-            trigger = trigger + self.step_size * grad
+            with torch.no_grad():
+                mask -= mask.grad.sign() * self.step_size
+                trigger -= trigger.grad.sign() * self.step_size
 
             # loss.backward()
 
