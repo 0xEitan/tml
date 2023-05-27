@@ -1,0 +1,16 @@
+# rclone mount -vv eitangdrive:TAU/TML/HW ~/TAU/TML/HW --vfs-cache-mode full --poll-interval 10s --vfs-cache-poll-interval 10s
+
+from google.colab import drive
+drive.mount("/content/drive")
+
+!which python; python --version; python -m pip --version
+
+!bash /content/drive/MyDrive/TAU/TML/HW/hw2/get-python3.6.sh
+!which python; python --version; python -m pip --version
+
+!python -m virtualenv /content/drive/MyDrive/TAU/TML/venvs/hw2
+!/content/drive/MyDrive/TAU/TML/venvs/hw2/bin/python -m pip install -r /content/drive/MyDrive/TAU/TML/HW/hw2/requirements.txt
+
+!/content/drive/MyDrive/TAU/TML/venvs/hw2/bin/python --version; /content/drive/MyDrive/TAU/TML/venvs/hw2/bin/python -m pip --version
+
+!/content/drive/MyDrive/TAU/TML/venvs/hw2/bin/python -c "import torch; print(torch.cuda.is_available())"

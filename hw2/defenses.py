@@ -5,6 +5,11 @@ from scipy.stats import norm
 from statsmodels.stats.proportion import proportion_confint
 from torch.utils.data import DataLoader
 
+try:
+    from tqdm import tqdm
+except ImportError:
+    tqdm = lambda x: x
+
 
 def free_adv_train(
     model,
@@ -42,14 +47,50 @@ def free_adv_train(
         data_tr, batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=dl_nw
     )
 
-    # init delta (adv. perturbation) - FILL ME
+    # init delta (adv. perturbation)
+    delta = torch.zeros(batch_size, requires_grad=True).to(device)
 
-    # total number of updates - FILL ME
+    # total number of updates
+    total = 0
 
     # when to update lr
     scheduler_step_iters = int(np.ceil(len(data_tr) / batch_size))
 
-    # train - FILLE ME
+    # train
+    for epoch in tqdm(range(int(np.ceil(epochs / m)))):
+        for batch_i, minibatch in enumerate(loader_tr, 0):
+            inputs, labels = minibatch[0].to(device), minibatch[1].to(device)
+            size = inputs.size(0)
+
+            for m_i in range(m):
+                # noise = Variable(delta[:inputs.size(0)], requires_grad=True).to(device)
+                # noisy_input = inputs + noise
+
+                # perturb
+                inputs = inputs + delta[:size]
+
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+                # forward + backward
+                outputs = model(inputs)
+                loss = criterion(outputs, labels)
+                loss.backward()
+
+                # update perturbation
+                delta[:size] += eps * torch.sign(delta.grad)
+                delta = torch.clamp(delta, -eps, eps)
+
+                # noise_update = eps*torch.sign(noise.grad)
+                # delta[:inputs.size(0)] += noise_update
+                # delta.clamp_(-eps, eps)
+
+                # optimize
+                optimizer.step()
+
+        # update scheduler
+        if epoch > 0 and epoch % scheduler_step_iters == 0:
+            lr_scheduler.step()
 
     # done
     return model

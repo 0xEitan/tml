@@ -5,6 +5,11 @@ import torch
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
+try:
+    from tqdm import tqdm
+except ImportError:
+    tqdm = lambda x: x
+
 
 class TMLDataset(Dataset):
     def __init__(self, part, fpath="dataset-full.npz", transform=None):
@@ -48,7 +53,7 @@ def standard_train(
     - data_tr: training dataset
     - criterion: loss function (e.g., nn.CrossEntropyLoss())
     - optimizer: optimizer to be used (e.g., SGD)
-    - lr_scheduer: scheduler for updating the learning rate
+    - lr_scheduler: scheduler for updating the learning rate
     - device: device used for training
     - epochs: "virtual" number of epochs (equivalent to the number of
         epochs of standard training)
@@ -63,7 +68,7 @@ def standard_train(
     )
 
     # train
-    for epoch in range(epochs):  # loop over the dataset multiple times
+    for epoch in tqdm(range(epochs)):  # loop over the dataset multiple times
         for i, data in enumerate(loader_tr, 0):
             # get inputs and labels
             inputs, labels = data[0].to(device), data[1].to(device)
@@ -71,9 +76,14 @@ def standard_train(
             # zero the parameter gradients
             optimizer.zero_grad()
 
-            # forward + backward + optimize - FILL ME
+            # forward + backward + optimize
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
 
-        # update scheduler - FILL ME
+        # update scheduler
+        lr_scheduler.step()
 
     # done
     return model
