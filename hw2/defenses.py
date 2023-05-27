@@ -1,4 +1,5 @@
 from collections import defaultdict
+from itertools import cycle
 
 import numpy as np
 import torch
@@ -213,9 +214,57 @@ class NeuralCleanse:
         - mask:
         - trigger:
         """
-        # randomly initialize mask and trigger in [0,1] - FILL ME
 
-        # run self.niters of SGD to find (potential) trigger and mask - FILL ME
+        # randomly initialize mask and trigger in [0,1]. mask is a single 2D image,
+        # trigger is a 3D matrix, representing a 3-channel image.
+        # TODO
+        # mask_dim = list(self.dim)
+        # mask_dim[1] = 1
+        # mask_dim = tuple(mask_dim)
+        # mask = torch.rand(mask_dim, requires_grad=True).to(device)
+        mask = torch.rand(self.dim, requires_grad=True).to(device)
+        trigger = torch.rand(self.dim, requires_grad=True).to(device)
+
+        # SGD to find (potential) trigger and mask
+        optimizer = torch.optim.SGD(
+            params=[mask, trigger],
+            lr=self.step_size,
+        )
+
+        data_iter = cycle(data_loader)
+        for _ in tqdm(range(self.niters)):
+            # data_iter = iter(data_loader)
+            # sgd_iters = 0
+            # while True:
+            inputs, _ = next(data_iter)
+            inputs = inputs.to(device)
+            target_labels = (
+                torch.zeros(inputs.size(0), dtype=torch.long) + int(c_t)
+            ).to(device)
+
+            # build the triggered image according to the paper, A(x,m,t) = (1-m)*x + m*t
+            inputs = (1 - mask) * inputs + mask * trigger
+
+            # zero the parameter gradients
+            optimizer.zero_grad()
+
+            # forward
+            outputs = self.model(inputs)
+
+            # backward against the target labels
+            loss = self.loss_func(outputs, target_labels)
+            # since we want to minimize the mask, we incorporate its norm to the loss
+            # TODO
+            # loss += (self.lambda_c * mask.norm(p=1)).to(device)
+            loss += (self.lambda_c * mask.sum()).to(device)
+            loss.backward()
+
+            # optimize
+            optimizer.step()
+
+            # sgd_iters += inputs.size(0)
+            # if sgd_iters >= self.niters:
+            #     break
 
         # done
         return mask, trigger

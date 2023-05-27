@@ -93,7 +93,7 @@ def compute_accuracy(model, data_loader, device):
     count_correct = 0
     count_all = 0
     with torch.no_grad():
-        for data in data_loader:
+        for data in tqdm(data_loader):
             x, y = data[0].to(device), data[1].to(device)
             outputs = model(x)
             _, preds = torch.max(outputs, 1)
@@ -106,7 +106,7 @@ def compute_backdoor_success_rate(model, data_loader, device, mask, trigger, c_t
     count_success = 0
     count_all = 0
     with torch.no_grad():
-        for data in data_loader:
+        for data in tqdm(data_loader):
             x, y = data[0], data[1]
             x = x[y != c_t]
             if len(x) < 1:
@@ -122,7 +122,7 @@ def compute_backdoor_success_rate(model, data_loader, device, mask, trigger, c_t
 
 def run_whitebox_attack(attack, data_loader, targeted, device, n_classes=4):
     x_adv_all, y_all = [], []
-    for data in data_loader:
+    for data in tqdm(data_loader):
         x, y = data[0].to(device), data[1].to(device)
         if targeted:
             y = (
