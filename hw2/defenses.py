@@ -217,11 +217,6 @@ class NeuralCleanse:
 
         # randomly initialize mask and trigger in [0,1]. mask is a single 2D image,
         # trigger is a 3D matrix, representing a 3-channel image.
-        # TODO
-        # mask_dim = list(self.dim)
-        # mask_dim[1] = 1
-        # mask_dim = tuple(mask_dim)
-        # mask = torch.rand(mask_dim, requires_grad=True).to(device)
         mask = torch.rand(self.dim[2:], requires_grad=True, device=device)
         trigger = torch.rand(self.dim, requires_grad=True, device=device)
 

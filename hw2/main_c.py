@@ -47,9 +47,7 @@ def run_neural_cleanse():
 
     # dictionaries for all masks and triggers
     masks, triggers = {}, {}
-    # TODO
     for model_id in range(2):
-        # for model_id in [1]:
         # dictionaries for masks and triggers for model_id
         masks[model_id], triggers[model_id] = {}, {}
         # load model
@@ -63,9 +61,7 @@ def run_neural_cleanse():
         nc = defenses.NeuralCleanse(model)
 
         # find mask + trigger targeting each potential class
-        # TODO
         for c_t in range(4):
-            # for c_t in [0]:
             mask, trigger = nc.find_candidate_backdoor(c_t, loader_test, device)
             masks[model_id][c_t] = mask.to("cpu")
             triggers[model_id][c_t] = trigger.to("cpu")
@@ -75,11 +71,8 @@ def run_neural_cleanse():
             )
 
     # ask for user input
-    # TODO
     selected_mid = int(input("Which model is backdoored (0/1)? "))
     selected_c_t = int(input("Which class is the backdoor targeting (0/1/2/3)? "))
-    # selected_mid = 1
-    # selected_c_t = 0
 
     return (
         selected_mid,
@@ -87,8 +80,6 @@ def run_neural_cleanse():
         triggers[selected_mid][selected_c_t],
         selected_c_t,
     )
-    # TODO
-    # return masks, triggers
 
 
 def evaluate_backdoor_success(model_id, mask, trigger, c_t):
@@ -114,16 +105,10 @@ def evaluate_backdoor_success(model_id, mask, trigger, c_t):
 
 if __name__ == "__main__":
     # evaluate the accuracy of the two models
-    # evaluate_accuracy()
+    evaluate_accuracy()
 
     # run NeuralCleanse to find backdoor
     backdoored_model_id, mask, trigger, c_t = run_neural_cleanse()
-    # masks, triggers = run_neural_cleanse()
-
-    # TODO
-    # import ipdb
-
-    # ipdb.set_trace()
 
     # save mask and trigger
     mask_im = mask.detach().numpy().squeeze().transpose((1, 2, 0))
