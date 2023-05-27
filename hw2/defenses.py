@@ -222,8 +222,8 @@ class NeuralCleanse:
         # mask_dim[1] = 1
         # mask_dim = tuple(mask_dim)
         # mask = torch.rand(mask_dim, requires_grad=True).to(device)
-        mask = torch.rand(self.dim[2:], requires_grad=True).to(device)
-        trigger = torch.rand(self.dim, requires_grad=True).to(device)
+        mask = torch.rand(self.dim[2:], requires_grad=True, device=device)
+        trigger = torch.rand(self.dim, requires_grad=True, device=device)
 
         data_iter = cycle(data_loader)
         for _ in tqdm(range(self.niters)):
