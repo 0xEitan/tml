@@ -48,7 +48,7 @@ def free_adv_train(
     )
 
     # init delta (adv. perturbation)
-    delta = torch.zeros(batch_size, requires_grad=True).to(device)
+    delta = torch.zeros(data_tr[0][0].size()).to(device)
 
     # total number of updates
     total = 0
@@ -60,14 +60,13 @@ def free_adv_train(
     for epoch in tqdm(range(int(np.ceil(epochs / m)))):
         for batch_i, minibatch in enumerate(loader_tr, 0):
             inputs, labels = minibatch[0].to(device), minibatch[1].to(device)
-            size = inputs.size(0)
 
             for m_i in range(m):
-                # noise = Variable(delta[:inputs.size(0)], requires_grad=True).to(device)
-                # noisy_input = inputs + noise
-
                 # perturb
-                inputs = inputs + delta[:size]
+                noise = torch.autograd.Variable(
+                    delta[: inputs.size(0)], requires_grad=True
+                ).to(device)
+                inputs = inputs + noise
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
@@ -78,12 +77,8 @@ def free_adv_train(
                 loss.backward()
 
                 # update perturbation
-                delta[:size] += eps * torch.sign(delta.grad)
-                delta = torch.clamp(delta, -eps, eps)
-
-                # noise_update = eps*torch.sign(noise.grad)
-                # delta[:inputs.size(0)] += noise_update
-                # delta.clamp_(-eps, eps)
+                delta[: inputs.size(0)] += eps * torch.sign(noise.grad)
+                delta.clamp_(-eps, eps)
 
                 # optimize
                 optimizer.step()

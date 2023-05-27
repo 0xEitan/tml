@@ -154,9 +154,9 @@ def run_evaluation():
 if __name__ == "__main__":
     args = parse_arguments()
     if args.train:
-        print("Training standard model...")
-        t = run_standard_training()
-        print(f"Time (in seconds) to complete standard training: {t:0.4f}")
+        # print("Training standard model...")
+        # t = run_standard_training()
+        # print(f"Time (in seconds) to complete standard training: {t:0.4f}")
         print("Adversarially training a model...")
         t = run_free_adv_training()
         print(f"Time (in seconds) to complete free adversarial training: {t:0.4f}")
